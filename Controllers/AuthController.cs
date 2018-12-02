@@ -70,6 +70,7 @@ namespace bookstoreAPI.Controllers
         }
 
         /* Register */
+		[AllowAnonymous]
         [HttpPut("register")]
         public IActionResult Create([FromBody] User user)
         {
