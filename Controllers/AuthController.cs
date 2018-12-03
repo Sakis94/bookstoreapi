@@ -9,6 +9,7 @@ using MongoDB.Driver;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using Dtos;
 using Models;
 using Services;
 
@@ -44,28 +45,16 @@ namespace bookstoreAPI.Controllers
 		[AllowAnonymous]
 		[HttpPost("login")]
         // [Authorize(Roles = "Administrators")]
-        public IActionResult Post([FromBody] User input){
+        public IActionResult Login([FromBody] User input){
 			return Ok( _userService.Login(input) );
         }
 
         /* Register */
 		[AllowAnonymous]
         [HttpPut("register")]
-        public IActionResult Create([FromBody] User input){
-
-            var collection = new Dictionary<string, object>();
-
-            if( user.ValidateData() ){
-                _userService.CreateUser( user );
-                collection.Add("errorLevel", 0);
-                collection.Add("errorMessage", "Account created successfully!");
-                return Ok(collection);
-            } else {
-                collection.Add("errorLevel", 1);
-                collection.Add("errorMessage", "User data is invalid");
-            }
-
-            return Ok(collection);
+        public IActionResult Register([FromBody] User input){
+			var test = new UserRole();
+			return Ok( _userService.Register(input) );
         }
 
     }
