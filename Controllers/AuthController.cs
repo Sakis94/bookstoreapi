@@ -36,30 +36,18 @@ namespace bookstoreAPI.Controllers
         /* Login */
         [HttpPost("login")]
         // [Authorize(Roles = "Administrators")]
-        public IActionResult Post([FromBody] User user)
-        {
-            var filters = new BsonDocument{{ "Username", user.Username }};
-            var results = _dbService.Users.Get( filters );
-            var collection = new Dictionary<string, object>();
+        public IActionResult Post([FromBody] User inputuUser){
 
-            user.CalculatePassword();
+			var userResponse = new UserResponse();
+			var dbUser = _userService.GetUserByUsername( inputuUser.Username );
+			var perform = _userService.Login( inputuUser.Password, dbUser.Password );
 
-			if ( results.Count > 0 ){
-                var dbuser = results[0];
-                if( dbuser.Password == user.Password ){
-                    collection.Add("errorLevel", 0);
-                    collection.Add("errorMessage", "You are logged in successfully!");
-                    collection.Add("sessionId", "test_session");
-                } else {
-                    collection.Add("errorLevel", 1);
-                    collection.Add("errorMessage", "Wrong password!");
-                }
-            } else {
-                collection.Add("errorLevel", 2);
-                collection.Add("errorMessage", "This user does not exist!");
-            }
+			if( perform ){
+				userResponse.ErrorLevel = UserResponse.ERROR_SUCCESS;
+				userResponse.UserData = dbUser;
+			}
 
-            return Ok(collection);
+			return Ok( userResponse );
         }
 
         /* Logout */
@@ -77,7 +65,6 @@ namespace bookstoreAPI.Controllers
             var collection = new Dictionary<string, object>();
 
             if( user.ValidateData() ){
-                user.CalculatePassword();
                 _userService.CreateUser( user );
                 collection.Add("errorLevel", 0);
                 collection.Add("errorMessage", "Account created successfully!");

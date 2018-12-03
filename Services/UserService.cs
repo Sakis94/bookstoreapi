@@ -1,8 +1,11 @@
 using System;
 using Microsoft.Extensions.Configuration;
-using Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
+
+using Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Services
 {
@@ -19,21 +22,44 @@ namespace Services
         }
 
         public User GetUserByUsername( string username ){
-            return new User();
+			var filters = new BsonDocument { { "Username", username } };
+			var results = _dbService.Users.Get(filters);
+			if( results.Count > 0 ){
+				return results[0];
+			}
+			return new User();
         }
 
         public void CreateUser( User user ){
             var result = _dbService.Users.Add(user);
         }
 
-        public void LogoutUser( ObjectId id )
+        public bool Logout( ObjectId id )
         {
-            // 
+			return true;
         }
 
         public string GenerateSession( User user ){
             return "";
         }
+
+		public bool Login( string inputPasswd, string dbPasswd ){
+			return this.HashPassword(inputPasswd) == dbPasswd;
+		}
+
+		private string HashPassword( string input ){
+
+			MD5 md5 = System.Security.Cryptography.MD5.Create();
+			byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+			byte[] hash = md5.ComputeHash(inputBytes);
+
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < hash.Length; i++)
+			{
+				sb.Append(hash[i].ToString("X2"));
+			}
+			return sb.ToString();
+		}
 
     }
 
