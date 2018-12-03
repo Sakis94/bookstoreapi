@@ -37,18 +37,24 @@ namespace Services
 			input.Password = this.HashPassword(input.Password);
 
 			if( user == null ){
-				return new UserResponse { ErrorLevel = UserResponse.ERROR_USERNAME, ErrorMessage = UserResponse.ERROR_MSG_USERNAME };
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_LOGIN_USERNAME, ErrorMessage = UserResponse.ERROR_LOGIN_MSG_USERNAME };
 			} else if( user.Password != input.Password ){
-				return new UserResponse { ErrorLevel = UserResponse.ERROR_PASSWORD, ErrorMessage = UserResponse.ERROR_MSG_PASSWORD };
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_LOGIN_PASSWORD, ErrorMessage = UserResponse.ERROR_LOGIN_MSG_PASSWORD };
 			} else {
 				var userData = new UserDto {};
-				return new UserResponse { ErrorLevel = UserResponse.ERROR_PASSWORD, ErrorMessage = UserResponse.ERROR_MSG_PASSWORD, UserData = userData };
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_LOGIN_SUCCESS, ErrorMessage = UserResponse.ERROR_LOGIN_MSG_PASSWORD, UserData = userData };
 			}
 		}
 
-		public void Register( User user ){
-            var result = _dbService.Users.Add(user);
-        }
+		public UserResponse Register( User input ){
+			var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
+			if( user == null ){
+				var result = _dbService.Users.Add(user);
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_ACCOUNT_EXISTS, ErrorMessage = UserResponse.ERROR_REGISTER_MSG_EXISTS };
+			} else {
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_SUCCESS };
+			}
+		}
 
 		public User GetUser( BsonDocument filters ){
 			var results = _dbService.Users.Get(filters);
@@ -66,10 +72,10 @@ namespace Services
 			byte[] hash = md5.ComputeHash(inputBytes);
 
 			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < hash.Length; i++)
-			{
+			for (int i = 0; i < hash.Length; i++){
 				sb.Append(hash[i].ToString("X2"));
 			}
+
 			return sb.ToString();
 		}
 
