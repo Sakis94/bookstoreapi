@@ -13,14 +13,6 @@ namespace Models
         public string Lastname { get; set; }
         public DateTime RegisterDate { get; set; }
         public string Password { get; set; }
-
-        public bool ValidateData(){
-            if( this.Username.Length > 0 && this.Firstname.Length > 0 && this.Lastname.Length > 0 ){
-                return true;
-            }
-            return false;
-        }
-
     }
 
 }

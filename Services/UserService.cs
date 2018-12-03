@@ -2,10 +2,11 @@ using System;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
-
-using Models;
 using System.Security.Cryptography;
 using System.Text;
+
+using Models;
+using Dtos;
 
 namespace Services
 {
@@ -21,19 +22,6 @@ namespace Services
             _dbService = dbService;
         }
 
-        public User GetUserByUsername( string username ){
-			var filters = new BsonDocument { { "Username", username } };
-			var results = _dbService.Users.Get(filters);
-			if( results.Count > 0 ){
-				return results[0];
-			}
-			return new User();
-        }
-
-        public void CreateUser( User user ){
-            var result = _dbService.Users.Add(user);
-        }
-
         public bool Logout( ObjectId id )
         {
 			return true;
@@ -43,8 +31,32 @@ namespace Services
             return "";
         }
 
-		public bool Login( string inputPasswd, string dbPasswd ){
-			return this.HashPassword(inputPasswd) == dbPasswd;
+		public UserResponse Login( User input ){
+
+			var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
+			input.Password = this.HashPassword(input.Password);
+
+			if( user == null ){
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_USERNAME, ErrorMessage = UserResponse.ERROR_MSG_USERNAME };
+			} else if( user.Password != input.Password ){
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_PASSWORD, ErrorMessage = UserResponse.ERROR_MSG_PASSWORD };
+			} else {
+				var userData = new UserDto {};
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_PASSWORD, ErrorMessage = UserResponse.ERROR_MSG_PASSWORD, UserData = userData };
+			}
+		}
+
+		public void Register( User user ){
+            var result = _dbService.Users.Add(user);
+        }
+
+		public User GetUser( BsonDocument filters ){
+			var results = _dbService.Users.Get(filters);
+			if( results.Count <= 0 ){
+				return null;
+			} else {
+				return results[0];
+			}
 		}
 
 		private string HashPassword( string input ){

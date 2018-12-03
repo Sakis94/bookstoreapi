@@ -32,23 +32,6 @@ namespace bookstoreAPI.Controllers
         public IActionResult GetAction(){
             return Ok("TEST");
         }
-        
-        /* Login */
-        [HttpPost("login")]
-        // [Authorize(Roles = "Administrators")]
-        public IActionResult Post([FromBody] User inputuUser){
-
-			var userResponse = new UserResponse();
-			var dbUser = _userService.GetUserByUsername( inputuUser.Username );
-			var perform = _userService.Login( inputuUser.Password, dbUser.Password );
-
-			if( perform ){
-				userResponse.ErrorLevel = UserResponse.ERROR_SUCCESS;
-				userResponse.UserData = dbUser;
-			}
-
-			return Ok( userResponse );
-        }
 
         /* Logout */
         [HttpPost("logout")]
@@ -57,11 +40,19 @@ namespace bookstoreAPI.Controllers
             return Ok();
         }
 
+		/* Login */
+		[AllowAnonymous]
+		[HttpPost("login")]
+        // [Authorize(Roles = "Administrators")]
+        public IActionResult Post([FromBody] User input){
+			return Ok( _userService.Login(input) );
+        }
+
         /* Register */
 		[AllowAnonymous]
         [HttpPut("register")]
-        public IActionResult Create([FromBody] User user)
-        {
+        public IActionResult Create([FromBody] User input){
+
             var collection = new Dictionary<string, object>();
 
             if( user.ValidateData() ){

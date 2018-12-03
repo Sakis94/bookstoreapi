@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Dtos;
+
 namespace Models
 {
 	public class UserResponse {
@@ -16,7 +18,7 @@ namespace Models
 
 		public int ErrorLevel;
 		public string ErrorMessage;
-		public User UserData;
+		public UserDto UserData;
 
 	}
 }
