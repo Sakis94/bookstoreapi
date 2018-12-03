@@ -7,8 +7,5 @@ namespace Models
 		public ObjectId Id { get; set; }
 	}
 
-	public interface IEntity
-	{
-		
-	}
+	public interface IEntity { }
 }

@@ -32,35 +32,6 @@ namespace bookstoreAPI.Controllers
         public IActionResult GetAction(){
             return Ok("TEST");
         }
-        
-        /* Login */
-        [HttpPost("login")]
-        // [Authorize(Roles = "Administrators")]
-        public IActionResult Post([FromBody] User user)
-        {
-            var filters = new BsonDocument{{ "Username", user.Username }};
-            var results = _dbService.Users.Get( filters );
-            var collection = new Dictionary<string, object>();
-
-            user.CalculatePassword();
-
-			if ( results.Count > 0 ){
-                var dbuser = results[0];
-                if( dbuser.Password == user.Password ){
-                    collection.Add("errorLevel", 0);
-                    collection.Add("errorMessage", "You are logged in successfully!");
-                    collection.Add("sessionId", "test_session");
-                } else {
-                    collection.Add("errorLevel", 1);
-                    collection.Add("errorMessage", "Wrong password!");
-                }
-            } else {
-                collection.Add("errorLevel", 2);
-                collection.Add("errorMessage", "This user does not exist!");
-            }
-
-            return Ok(collection);
-        }
 
         /* Logout */
         [HttpPost("logout")]
@@ -69,15 +40,22 @@ namespace bookstoreAPI.Controllers
             return Ok();
         }
 
+		/* Login */
+		[AllowAnonymous]
+		[HttpPost("login")]
+        // [Authorize(Roles = "Administrators")]
+        public IActionResult Post([FromBody] User input){
+			return Ok( _userService.Login(input) );
+        }
+
         /* Register */
 		[AllowAnonymous]
         [HttpPut("register")]
-        public IActionResult Create([FromBody] User user)
-        {
+        public IActionResult Create([FromBody] User input){
+
             var collection = new Dictionary<string, object>();
 
             if( user.ValidateData() ){
-                user.CalculatePassword();
                 _userService.CreateUser( user );
                 collection.Add("errorLevel", 0);
                 collection.Add("errorMessage", "Account created successfully!");
