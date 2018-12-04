@@ -55,15 +55,15 @@ namespace bookstoreAPI
 				options.User.RequireUniqueEmail = false;
 			});
 
-			services.AddIdentity<User, IdentityRole>();
+			services.AddIdentity<IdentityUser, IdentityRole>(options => {
+				options.User.RequireUniqueEmail = false;
+			});
 
 			services.ConfigureApplicationCookie(options => {
 				options.LoginPath = $"/Identity/Account/Login";
 				options.LogoutPath = $"/Identity/Account/Logout";
 				options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 			});
-
-			//services.AddSingleton<IEmailSender, EmailSender>();
 
 			services.AddMvc(config => {
 				var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
@@ -78,6 +78,8 @@ namespace bookstoreAPI
 
 			services.AddSingleton<DBService>(p => dbservice);
 			services.AddSingleton<UserService>();
+
+			services.AddTransient<UserManager<User>>();
 
 		}
 

@@ -4,9 +4,11 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 
 using Models;
 using Dtos;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Services
 {
@@ -15,12 +17,14 @@ namespace Services
     {
         private readonly IConfiguration _configuration;
         private readonly DBService _dbService;
+		private readonly UserManager<User> _userManager;
 
-        public UserService(IConfiguration configuration, DBService dbService)
+		public UserService(IConfiguration configuration, DBService dbService, UserManager<User> userManager)
         {
             _configuration = configuration;
             _dbService = dbService;
-        }
+			_userManager = userManager;
+		}
 
         public bool Logout( ObjectId id )
         {
@@ -47,6 +51,20 @@ namespace Services
 		}
 
 		public UserResponse Register( User input ){
+
+			//var us = new UserStore(_dbService);
+			//var duser = new User();
+			//var userManager = new UserManager<User>( new UserStore<User>(_dbService) );
+
+			var uuser = new User();
+			uuser.UserName = "122324345345";
+
+			var res = _userManager.CreateAsync( uuser, "test" );
+
+			if( 1==1 ){
+				return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_SUCCESS };
+			}
+
 			var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
 			if( user == null ){
 				input.PasswordHash = this.HashPassword(input.PasswordHash);

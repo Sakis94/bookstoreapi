@@ -2,13 +2,14 @@ using System;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Microsoft.EntityFrameworkCore;
 
 using Models;
 
 namespace Services
 {
 
-    public class DBService
+    public class DBService : DbContext
     {
         private IMongoClient _provider;
         private IMongoDatabase _db;
