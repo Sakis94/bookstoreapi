@@ -19,11 +19,11 @@ namespace Services
         private readonly DBService _dbService;
 		private readonly UserManager<User> _userManager;
 
-		public UserService(IConfiguration configuration, DBService dbService, UserManager<User> userManager)
+		public UserService(IConfiguration configuration, DBService dbService/*UserManager<User> userManager*/)
         {
             _configuration = configuration;
             _dbService = dbService;
-			_userManager = userManager;
+			//_userManager = userManager;
 		}
 
         public bool Logout( ObjectId id )
@@ -50,25 +50,28 @@ namespace Services
 			}
 		}
 
-		public UserResponse Register( User input ){
+		public UserResponse Register( UserDTO input ){
 
 			//var us = new UserStore(_dbService);
 			//var duser = new User();
 			//var userManager = new UserManager<User>( new UserStore<User>(_dbService) );
 
-			var uuser = new User();
-			uuser.UserName = "122324345345";
+			//var uuser = new User();
+			//uuser.UserName = "122324345345";
 
-			var res = _userManager.CreateAsync( uuser, "test" );
+            //var res = _userManager.CreateAsync( uuser, "test" );
+            //return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_SUCCESS };
 
-			if( 1==1 ){
-				return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_SUCCESS };
-			}
-
-			var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
+            var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
 			if( user == null ){
-				input.PasswordHash = this.HashPassword(input.PasswordHash);
-				_dbService.Users.Add(input);
+				user = new User {
+                    UserName = input.UserName,
+                    FirstName = input.FirstName,
+                    LastName = input.LastName,
+                    PasswordHash = this.HashPassword(input.Password)
+                };
+
+                _dbService.Users.Add(user);
 				return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_SUCCESS };
 			} else {
 				return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_ACCOUNT_EXISTS, ErrorMessage = UserResponse.ERROR_REGISTER_MSG_EXISTS };

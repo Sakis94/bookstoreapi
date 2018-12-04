@@ -52,7 +52,7 @@ namespace bookstoreAPI.Controllers
         /* Register */
 		[AllowAnonymous]
         [HttpPut("register")]
-        public IActionResult Register([FromBody] User input){
+        public IActionResult Register([FromBody] UserDTO input){
 			return Ok( _userService.Register(input) );
         }
 

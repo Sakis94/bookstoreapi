@@ -79,7 +79,7 @@ namespace bookstoreAPI
 			services.AddSingleton<DBService>(p => dbservice);
 			services.AddSingleton<UserService>();
 
-			services.AddTransient<UserManager<User>>();
+			//services.AddTransient<UserManager<User>>();
 
 		}
 
