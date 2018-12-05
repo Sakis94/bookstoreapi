@@ -53,7 +53,8 @@ namespace bookstoreAPI.Controllers
 		[AllowAnonymous]
         [HttpPut("register")]
         public IActionResult Register([FromBody] UserDTO input){
-			return Ok( _userService.Register(input) );
+			return Ok( _userService.Register(input));
+			
         }
 
     }
