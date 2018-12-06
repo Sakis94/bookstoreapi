@@ -45,17 +45,26 @@ namespace bookstoreAPI.Controllers
 		[AllowAnonymous]
 		[HttpPost("login")]
         // [Authorize(Roles = "Administrators")]
-        public IActionResult Login([FromBody] User input){
-			return Ok( _userService.Login(input) );
-        }
+        public IActionResult Login([FromBody] UserDTO input){
+			var result = _userService.Register(input);
+			if( result ){
+				return Ok( result );
+			} else {
+				return BadRequest();
+			}
+		}
 
         /* Register */
 		[AllowAnonymous]
         [HttpPut("register")]
         public IActionResult Register([FromBody] UserDTO input){
-			return Ok( _userService.Register(input));
-			
-        }
+			var result = _userService.Register(input);
+			if( result ){
+				return Ok();
+			} else {
+				return BadRequest();
+			}
+		}
 
     }
 }

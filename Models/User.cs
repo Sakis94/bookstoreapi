@@ -7,10 +7,8 @@ using MongoDB.Bson;
 
 namespace Models
 {
-	public class User : IdentityUser<Guid>, IEntity
+	public class User : IdentityUser, IEntity
 	{
-
-		public override Guid Id { get; set; }
 		public string FirstName { get; set; }
 		public string LastName { get; set; }
 	}

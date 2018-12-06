@@ -10,6 +10,7 @@ using Models;
 using Dtos;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Services
 {
@@ -18,13 +19,11 @@ namespace Services
 	{
 		private readonly IConfiguration _configuration;
 		private readonly DBService _dbService;
-		private readonly UserManager<User> _userManager;
 
-		public UserService(IConfiguration configuration, DBService dbService, UserManager<User> userManager)
+		public UserService(IConfiguration configuration, DBService dbService)
 		{
 			_configuration = configuration;
 			_dbService = dbService;
-			_userManager = userManager;
 		}
 
 		public bool Logout(ObjectId id)
@@ -37,52 +36,42 @@ namespace Services
 			return "";
 		}
 
-		public UserResponse Login(User input)
-		{
+		public UserDTO Login(UserDTO input){
 
 			var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
-			input.PasswordHash = this.HashPassword(input.PasswordHash);
+			var password = this.HashPassword(input.Password);
 
-			if (user == null)
-			{
-				return new UserResponse { ErrorLevel = UserResponse.ERROR_LOGIN_USERNAME, ErrorMessage = UserResponse.ERROR_LOGIN_MSG_USERNAME };
+			if (user == null){
+				return null;
 			}
-			else if (user.PasswordHash != input.PasswordHash)
-			{
-				return new UserResponse { ErrorLevel = UserResponse.ERROR_LOGIN_PASSWORD, ErrorMessage = UserResponse.ERROR_LOGIN_MSG_PASSWORD };
+			else if (user.PasswordHash != password){
+				return null;
 			}
-			else
-			{
+			else {
 				var userData = new UserDTO { Id = user.Id, UserName = user.UserName, FirstName = user.FirstName, LastName = user.LastName };
-				return new UserResponse { ErrorLevel = UserResponse.ERROR_LOGIN_SUCCESS, UserData = userData };
+				return userData;
 			}
 		}
 
-		public async Task<User> Register(UserDTO input)
-		{
+		public bool Register(UserDTO input){
 
-			//var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
+			var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
 
-			var temp = await _userManager.CreateAsync(new User { FirstName = "Nikos" }, "123456");
-			
-			return new User { FirstName = "Nikos" };
-			//if (user == null)
-			//{
-			//	user = new User
-			//	{
-			//		UserName = input.UserName,
-			//		FirstName = input.FirstName,
-			//		LastName = input.LastName,
-			//		PasswordHash = this.HashPassword(input.Password)
-			//	};
+			if (user == null){
+				user = new User
+				{
+					UserName = input.UserName,
+					FirstName = input.FirstName,
+					LastName = input.LastName,
+					PasswordHash = this.HashPassword(input.Password)
+				};
 
-			//	_dbService.Users.Add(user);
-			//	return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_SUCCESS };
-			//}
-			//else
-			//{
-			//	return new UserResponse { ErrorLevel = UserResponse.ERROR_REGISTER_ACCOUNT_EXISTS, ErrorMessage = UserResponse.ERROR_REGISTER_MSG_EXISTS };
-			//}
+				_dbService.Users.Add(user);
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 
 		public User GetUser(BsonDocument filters)
