@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Dtos;
 using Models;
 using Services;
+using Auth;
 
 namespace bookstoreAPI.Controllers
 {
@@ -54,10 +55,11 @@ namespace bookstoreAPI.Controllers
 			}
 		}
 
-        /* Register */
+		/* Register */
 		[AllowAnonymous]
-        [HttpPut("register")]
-        public IActionResult Register([FromBody] UserDTO input){
+		[Auth(Optional = true)]
+		[HttpPut("register")]
+		public IActionResult Register([FromBody] UserDTO input){
 			var result = _userService.Register(input);
 			if( result ){
 				return Ok();

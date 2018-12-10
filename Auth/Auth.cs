@@ -7,13 +7,18 @@ using System.Threading.Tasks;
 
 namespace Auth
 {
-    public class MinimumAgeRequirement : IAuthorizationRequirement
-    {
-        public int MinimumAge { get; private set; }
+	// [AttributeUsage(AttributeTargets.Method, Inherited = false)]
+	public class AuthAttribute : Attribute {
 
-        public MinimumAgeRequirement(int minimumAge)
-        {
-            MinimumAge = minimumAge;
-        }
+		public bool optional = true;
+
+		public AuthAttribute(){
+			Console.WriteLine( "Optional: " + optional.ToString() );
+		}
+
+		public virtual bool Optional {
+			get { return optional; } set { optional = value; }
+		}
+
     }
 }
