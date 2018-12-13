@@ -74,12 +74,8 @@ namespace bookstoreAPI
 				options.Conventions.AuthorizeAreaPage("Identity", "/Account/Logout");
 			});
 
-			//services.AddScoped<IAuthorizationHandler>();
-
 			services.AddSingleton<DBService>(p => dbservice);
 			services.AddSingleton<UserService>();
-
-			//services.AddTransient<UserManager<User>>();
 
 		}
 
