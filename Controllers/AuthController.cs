@@ -12,10 +12,13 @@ using Microsoft.AspNetCore.Mvc;
 using Dtos;
 using Models;
 using Services;
-using Auth;
+using bookstoreapi.Models;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace bookstoreAPI.Controllers
 {
+
+    [AllowAnonymous]
     [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -31,42 +34,55 @@ namespace bookstoreAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAction(){
+        public IActionResult GetAction()
+        {
             return Ok("TEST");
         }
 
-        /* Logout */
-        [HttpPost("logout")]
-        public IActionResult Logout([FromBody] User user){
-            //_userService.LogoutUser( user.Id );
-            return Ok();
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginViewModel input)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var result = _userService.Login(input);
+                    if (result == null)
+                    {
+                        return BadRequest("Sfalma");
+                    }
+                    else
+                    {
+                        return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(result) });
+                    }
+
+                }
+                else
+                {
+                    return BadRequest("Sfalma");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Sfalma");
+            }
         }
 
-		/* Login */
-		[AllowAnonymous]
-		[HttpPost("login")]
-        // [Authorize(Roles = "Administrators")]
-        public IActionResult Login([FromBody] UserDTO input){
-			var result = _userService.Register(input);
-			if( result ){
-				return Ok( result );
-			} else {
-				return BadRequest();
-			}
-		}
+        [HttpPut("register")]
+        public IActionResult Register([FromBody] User input)
+        {
+            try
+            {
+                var result = _userService.Register(input);
 
-		/* Register */
-		[AllowAnonymous]
-		[Auth(Optional = true)]
-		[HttpPut("register")]
-		public IActionResult Register([FromBody] UserDTO input){
-			var result = _userService.Register(input);
-			if( result ){
-				return Ok();
-			} else {
-				return BadRequest();
-			}
-		}
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Sfalma");
+            }
+        }
 
     }
 }

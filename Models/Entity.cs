@@ -2,10 +2,8 @@ using MongoDB.Bson;
 
 namespace Models
 {
-    public class Entity : IEntity
+    public class Entity
     {
-		public ObjectId Id { get; set; }
-	}
-
-	public interface IEntity { }
+        public ObjectId Id { get; set; }
+    }
 }

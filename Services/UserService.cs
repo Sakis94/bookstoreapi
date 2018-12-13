@@ -11,99 +11,122 @@ using Dtos;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using bookstoreapi.Models;
+using System.Collections.Generic;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Services
 {
 
-	public class UserService
-	{
-		private readonly IConfiguration _configuration;
-		private readonly DBService _dbService;
+    public class UserService
+    {
+        private readonly IConfiguration _configuration;
+        private readonly DBService _dbService;
 
-		public UserService(IConfiguration configuration, DBService dbService)
-		{
-			_configuration = configuration;
-			_dbService = dbService;
-		}
+        public UserService(IConfiguration configuration, DBService dbService)
+        {
+            _configuration = configuration;
+            _dbService = dbService;
+        }
 
-		public bool Logout(ObjectId id)
-		{
-			return true;
-		}
+        public bool Logout(ObjectId id)
+        {
+            return true;
+        }
 
-		public string GenerateSession(User user)
-		{
-			return "";
-		}
+        public string GenerateSession(User user)
+        {
+            return "";
+        }
 
-		public UserDTO Login(UserDTO input){
+        public JwtSecurityToken Login(LoginViewModel input)
+        {
 
-			var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
-			var password = this.HashPassword(input.Password);
+            var user = this.GetUser(new BsonDocument { { "Username", input.Username } });
+            var password = this.HashPassword(input.Password);
 
-			if (user == null){
-				return null;
-			}
-			else if (user.PasswordHash != password){
-				return null;
-			}
-			else {
-				var userData = new UserDTO { Id = user.Id, UserName = user.UserName, FirstName = user.FirstName, LastName = user.LastName };
-				return userData;
-			}
-		}
+            if (user == null)
+            {
+                return null;
+            }
+            else if (user.PasswordHash != password)
+            {
+                return null;
+            }
+            else
+            {
 
-		public bool Register(UserDTO input){
+                var claims = new List<Claim>();
 
-			var user = this.GetUser(new BsonDocument { { "UserName", input.UserName } });
+                claims.Add(new Claim("Id", user.Id.ToString()));
+                claims.Add(new Claim("Name", user.Username));
 
-			if (user == null){
-				user = new User
-				{
-					UserName = input.UserName,
-					FirstName = input.FirstName,
-					LastName = input.LastName,
-					PasswordHash = this.HashPassword(input.Password)
-				};
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Key"]));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-				_dbService.Users.Add(user);
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
+                var token = new JwtSecurityToken(
+                  _configuration["Tokens:Issuer"],
+                  _configuration["Tokens:Issuer"],
+                  claims,
+                  expires: DateTime.UtcNow.AddMinutes(560),
+                  signingCredentials: creds);
 
-		public User GetUser(BsonDocument filters)
-		{
-			var results = _dbService.Users.Get(filters);
-			if (results.Count <= 0)
-			{
-				return null;
-			}
-			else
-			{
-				return results[0];
-			}
-		}
+                return token;
+            }
+        }
 
-		private string HashPassword(string input)
-		{
+        public User Register(User input)
+        {
+            var user = this.GetUser(new BsonDocument { { "UserName", input.Username } });
 
-			MD5 md5 = System.Security.Cryptography.MD5.Create();
-			byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-			byte[] hash = md5.ComputeHash(inputBytes);
+            if (user == null)
+            {
+                user = new User
+                {
+                    Username = input.Username,
+                    FirstName = input.FirstName,
+                    LastName = input.LastName,
+                    Email = input.Email,
+                    PasswordHash = this.HashPassword(input.Password)
+                };
+                var result = _dbService.Users.Add(user);
+                return result;
+            }
+            return null;
+        }
 
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < hash.Length; i++)
-			{
-				sb.Append(hash[i].ToString("X2"));
-			}
+        public User GetUser(BsonDocument filters)
+        {
+            var results = _dbService.Users.Get(filters);
+            if (results.Count <= 0)
+            {
+                return null;
+            }
+            else
+            {
+                return results[0];
+            }
+        }
 
-			return sb.ToString();
-		}
+        private string HashPassword(string input)
+        {
 
-	}
+            MD5 md5 = System.Security.Cryptography.MD5.Create();
+            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            byte[] hash = md5.ComputeHash(inputBytes);
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hash.Length; i++)
+            {
+                sb.Append(hash[i].ToString("X2"));
+            }
+
+            return sb.ToString();
+        }
+
+    }
 
 
 }

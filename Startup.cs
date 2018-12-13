@@ -16,85 +16,73 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 
 using Models;
 using Services;
-using Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using bookstoreapi.Auth;
 
 namespace bookstoreAPI
 {
-	public class Startup
-	{
-		public Startup(IConfiguration configuration)
-		{
-			Configuration = configuration;
-			dbservice = new DBService(Configuration["MongoSettings:ConnectionString"], Configuration["MongoSettings:Database"]);
-		}
-		private DBService dbservice { get; }
-		private IConfiguration Configuration { get; }
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+            dbservice = new DBService(Configuration["MongoSettings:ConnectionString"], Configuration["MongoSettings:Database"]);
+            var secretKey = Configuration["Tokens:Key"];
+            _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        }
+        private DBService dbservice { get; }
+        private readonly SymmetricSecurityKey _signingKey;
+        private IConfiguration Configuration { get; }
 
-		// This method gets called by the runtime. Use this method to add services to the container.
-		public void ConfigureServices(IServiceCollection services)
-		{
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddSingleton<DBService>(p => dbservice);
+            services.AddSingleton<UserService>();
+            services.AddTransient<AuthenticationProvider>();
+            services.AddAuthentication(options =>
+                 {
+                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                 })
+                 .AddJwtBearer(cfg =>
+                  {
+                      cfg.RequireHttpsMetadata = false;
+                      cfg.SaveToken = true;
 
-			services.Configure<IdentityOptions>(options =>
-			{
-				// Password settings.
-				options.Password.RequireDigit = true;
-				options.Password.RequireLowercase = true;
-				options.Password.RequireNonAlphanumeric = true;
-				options.Password.RequireUppercase = true;
-				options.Password.RequiredLength = 6;
-				options.Password.RequiredUniqueChars = 1;
+                      cfg.TokenValidationParameters = new TokenValidationParameters()
+                      {
+                          ValidIssuer = Configuration["Tokens:Issuer"],
+                          ValidAudience = Configuration["Tokens:Issuer"],
+                          IssuerSigningKey = _signingKey
+                      };
+                  });
+            services.AddMvc(config =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                                 .RequireAuthenticatedUser()
+                                 .Build();
+            });
+        }
 
-				// Lockout settings.
-				options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-				options.Lockout.MaxFailedAccessAttempts = 5;
-				options.Lockout.AllowedForNewUsers = true;
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseHsts();
+            }
 
-				// User settings.
-				options.User.AllowedUserNameCharacters =
-				"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-				options.User.RequireUniqueEmail = false;
-			});
-
-			services.AddIdentity<IdentityUser, IdentityRole>(options => {
-				options.User.RequireUniqueEmail = false;
-			});
-
-			services.ConfigureApplicationCookie(options => {
-				options.LoginPath = $"/Identity/Account/Login";
-				options.LogoutPath = $"/Identity/Account/Logout";
-				options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
-			});
-
-			services.AddMvc(config => {
-				var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-				config.Filters.Add(new AuthorizeFilter(policy));
-			}).SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddRazorPagesOptions(options => {
-				options.AllowAreas = true;
-				options.Conventions.AuthorizeAreaFolder("Identity", "/Account/Manage");
-				options.Conventions.AuthorizeAreaPage("Identity", "/Account/Logout");
-			});
-
-			services.AddSingleton<DBService>(p => dbservice);
-			services.AddSingleton<UserService>();
-
-		}
-
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-		{
-			if (env.IsDevelopment())
-			{
-				app.UseDeveloperExceptionPage();
-			}
-			else
-			{
-				app.UseHsts();
-			}
-
-			app.UseHttpsRedirection();
-			app.UseStaticFiles();
-			app.UseAuthentication();
-			app.UseMvc();
-		}
-	}
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseAuthentication();
+            app.UseMvc();
+        }
+    }
 }

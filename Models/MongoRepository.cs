@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Models
 {
-    public class MongoRepository<T> where T : IEntity
-	{
+    public class MongoRepository<T> where T : Entity
+    {
         protected internal IMongoCollection<T> collection;
 
         public MongoRepository(IMongoDatabase db, string tableName)
@@ -21,7 +21,8 @@ namespace Models
             return item;
         }
 
-        public List<T> Get(BsonDocument filters){
+        public List<T> Get(BsonDocument filters)
+        {
             var query = collection.Find(filters).ToListAsync();
             return query.Result;
         }
