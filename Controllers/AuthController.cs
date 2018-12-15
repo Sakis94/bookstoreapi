@@ -63,7 +63,7 @@ namespace bookstoreAPI.Controllers
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return BadRequest("Sfalma");
             }
@@ -78,7 +78,7 @@ namespace bookstoreAPI.Controllers
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return BadRequest("Sfalma");
             }

@@ -42,8 +42,7 @@ namespace bookstoreAPI
             services.AddSingleton<DBService>(p => dbservice);
             services.AddSingleton<UserService>();
             services.AddTransient<AuthenticationProvider>();
-            services.AddAuthentication(options =>
-                 {
+            services.AddAuthentication(options => {
                      options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                      options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                  })
@@ -59,8 +58,8 @@ namespace bookstoreAPI
                           IssuerSigningKey = _signingKey
                       };
                   });
-            services.AddMvc(config =>
-            {
+
+            services.AddMvc(config => {
                 var policy = new AuthorizationPolicyBuilder()
                                  .RequireAuthenticatedUser()
                                  .Build();

@@ -62,8 +62,9 @@ namespace Services
 
                 claims.Add(new Claim("Id", user.Id.ToString()));
                 claims.Add(new Claim("Name", user.Username));
+				claims.Add(new Claim(ClaimTypes.Role, "admin"));
 
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Key"]));
+				var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Key"]));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
                 var token = new JwtSecurityToken(

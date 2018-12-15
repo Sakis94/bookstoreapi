@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
+using System.Linq;
+using System.Security.Claims;
 
 namespace bookstoreapi.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class BooksController : ControllerBase
@@ -21,7 +23,7 @@ namespace bookstoreapi.Controllers
         [HttpGet]
         public IActionResult GetAction()
         {
-            return Ok("TEST");
+			return Ok( HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.Role) );
         }
     }
 }
