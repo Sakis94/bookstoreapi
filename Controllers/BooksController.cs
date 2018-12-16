@@ -23,7 +23,7 @@ namespace bookstoreapi.Controllers
         [HttpGet]
         public IActionResult GetAction()
         {
-			return Ok( HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.Role) );
-        }
+			return Ok( HttpContext.User.FindFirst( "id" ).Value );
+		}
     }
 }

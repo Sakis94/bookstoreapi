@@ -36,51 +36,43 @@ namespace bookstoreAPI.Controllers
         [HttpGet]
         public IActionResult GetAction()
         {
-            return Ok("TEST");
+            return Ok("login test");
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginViewModel input)
+        public IActionResult Login([FromBody] LoginDTO input)
         {
             try
             {
-                if (ModelState.IsValid)
-                {
+                if (ModelState.IsValid) {
                     var result = _userService.Login(input);
                     if (result == null)
                     {
-                        return BadRequest("Sfalma");
+                        return BadRequest("Username or password is not valid");
                     }
                     else
                     {
                         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(result) });
                     }
 
-                }
-                else
-                {
-                    return BadRequest("Sfalma");
+                } else {
+                    return BadRequest("Username or password is not valid");
                 }
 
             }
-            catch (Exception)
-            {
-                return BadRequest("Sfalma");
+            catch (Exception e) {
+                return BadRequest( e );
             }
         }
 
         [HttpPut("register")]
         public IActionResult Register([FromBody] User input)
         {
-            try
-            {
+            try {
                 var result = _userService.Register(input);
-
                 return Ok(result);
-            }
-            catch (Exception)
-            {
-                return BadRequest("Sfalma");
+            } catch (Exception e) {
+                return BadRequest( e );
             }
         }
 

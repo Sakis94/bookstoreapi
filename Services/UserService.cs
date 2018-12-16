@@ -41,22 +41,17 @@ namespace Services
             return "";
         }
 
-        public JwtSecurityToken Login(LoginViewModel input)
+        public JwtSecurityToken Login(LoginDTO input)
         {
 
             var user = this.GetUser(new BsonDocument { { "Username", input.Username } });
             var password = this.HashPassword(input.Password);
 
-            if (user == null)
-            {
+            if (user == null) {
                 return null;
-            }
-            else if (user.PasswordHash != password)
-            {
+            } else if (user.PasswordHash != password) {
                 return null;
-            }
-            else
-            {
+            } else {
 
                 var claims = new List<Claim>();
 
